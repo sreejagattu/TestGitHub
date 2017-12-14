@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sys_processor">
+    <sys_processor action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <class_name/>
+        <description/>
+        <interactive>false</interactive>
+        <name>exportAttachmentsToZip</name>
+        <parameters/>
+        <params_endpoint/>
+        <path/>
+        <path_endpoint/>
+        <require_csrf>false</require_csrf>
+        <roles/>
+        <script><![CDATA[var sysid = g_request.getParameter('sysparm_sys_id');
+var table = g_request.getParameter('sysparm_table');
+
+var theRecord = new GlideRecord(table);
+theRecord.addQuery('sys_id', sysid);
+theRecord.query();
+theRecord.next();
+
+var zipName = 'attachments.zip';
+
+var StringUtil = GlideStringUtil;
+
+var gr = new GlideRecord('sys_attachment');
+gr.addQuery('table_sys_id', theRecord.sys_id);
+gr.addQuery('table_name', theRecord.getTableName());
+gr.query();
+
+if (gr.hasNext()){
+    g_response.setHeader('Pragma', 'public');
+    g_response.addHeader('Cache-Control', 'max-age=0');
+    g_response.setContentType('application/octet-stream');
+    g_response.addHeader('Content-Disposition', 'attachment;filename=' + zipName);
+    var out = new Packages.java.util.zip.ZipOutputStream(g_response.getOutputStream());
+    var count=0;
+    while (gr.next()){
+        var sa = new GlideSysAttachment();
+        var binData = sa.getBytes(gr);
+        
+        var file = gr.file_name;
+        addBytesToZip(out, zipName, file, binData);
+        count ++;
+    }
+    // Complete the ZIP file
+    out.close();
+}
+
+function addBytesToZip (out, dir, file, stream){
+    // Add ZIP entry to output stream.
+    out.putNextEntry(new Packages.java.util.zip.ZipEntry(file));
+    out.write(stream, 0, stream.length);
+    out.closeEntry();
+}]]></script>
+        <sys_class_name>sys_processor</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-12-14 16:47:57</sys_created_on>
+        <sys_id>75f20719db030300a53ff00fbf96197d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>exportAttachmentsToZip</sys_name>
+        <sys_package display_value="TestGitHub" source="x_17582_testgithub">9932cbd1db030300a53ff00fbf96198a</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="TestGitHub">9932cbd1db030300a53ff00fbf96198a</sys_scope>
+        <sys_update_name>sys_processor_75f20719db030300a53ff00fbf96197d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-14 16:47:57</sys_updated_on>
+        <type>script</type>
+    </sys_processor>
+</record_update>
